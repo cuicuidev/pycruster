@@ -11,14 +11,20 @@ clustering algorithms and their parameters, thus streamlining their daily workfl
 ### Installation
 
 Install the package using pip:
-```bash pip install pycruster ```
+
+```sh
+pip install pycruster
+```
 
 Or, alternatively, you can compile the package from source:
-```bash python setup.py install ```
+
+```sh
+python setup.py install
+```
 
 ### Main features
 
-__Elbow__ object:
+_Elbow_ object:
 
 This object wraps a KMeans estimator instance from SciKit-Learn and enables you to
 quickly find the optimal number of clusters for your dataset. You need to pass the 
@@ -30,7 +36,7 @@ clusters, which is the number of clusters that minimizes the inertia value.
 You can also call the `plot()` method to plot the inertia values for each number of 
 clusters. This method will return a matplotlib figure object.
 
-__Silhouette__ object:
+_Silhouette_ object:
 
 This object wraps a KMeans estimator instance from SciKit-Learn and enables you to
 quickly find the optimal number of clusters for your dataset. You need to pass the
@@ -42,7 +48,7 @@ clusters, which is the number of clusters that maximizes the silhouette value.
 You can also call the `plot()` method to plot the silhouette values for each number of
 clusters. This method will return a matplotlib figure object.
 
-__GapStatistic__ object:
+_GapStatistic_ object:
 
 This object wraps a KMeans estimator instance from SciKit-Learn and enables you to
 quickly find the optimal number of clusters for your dataset. You need to pass the
