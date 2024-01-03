@@ -1,6 +1,4 @@
-use pyo3::prelude::*;
-
-/// # Main Module
+/// # PyCruster - Clustering made simple! 
 /// ---
 /// The PyCruster project aims to enhance some of the Scikit-Learn functionality by
 /// providing a set of tools to help with clustering problems. The main goal is to 
@@ -55,10 +53,3 @@ use pyo3::prelude::*;
 ///
 /// You can also call the `plot()` method to plot the gap statistic values for each number of
 /// clusters. This method will return a matplotlib figure object.
-
-
-#[pymodule]
-fn pycruster(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(closest_to_origin, m)?)?;
-    Ok(())
-}
