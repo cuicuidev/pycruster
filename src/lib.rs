@@ -1,64 +1,59 @@
 use pyo3::prelude::*;
 
-/// # Main Module
-/// ---
-/// The PyCruster project aims to enhance some of the Scikit-Learn functionality by
-/// providing a set of tools to help with clustering problems. The main goal is to 
-/// help developers and data scientists to make better decisions when choosing the 
-/// clustering algorithms and their parameters, thus streamlining their daily workflow.
-///
-/// ## Usage
-/// ---
-///
-/// ### Installation
-///
-/// Install the package using pip:
-/// ```bash pip install pycruster ```
-///
-/// Or, alternatively, you can compile the package from source:
-/// ```bash python setup.py install ```
-///
-/// ### Main features
-///
-/// __Elbow__ object:
-///
-/// This object wraps a KMeans estimator instance from SciKit-Learn and enables you to
-/// quickly find the optimal number of clusters for your dataset. You need to pass the 
-/// estimator instance and the X matrix to the object constructor. Then, you will be able 
-/// to call the `fit()` method. Once the `fit()` method is called, the object will store the
-/// inertia values for each number of clusters. This method returns the optimal number of 
-/// clusters, which is the number of clusters that minimizes the inertia value. 
-///
-/// You can also call the `plot()` method to plot the inertia values for each number of 
-/// clusters. This method will return a matplotlib figure object.
-///
-/// __Silhouette__ object:
-///
-/// This object wraps a KMeans estimator instance from SciKit-Learn and enables you to
-/// quickly find the optimal number of clusters for your dataset. You need to pass the
-/// estimator instance and the X matrix to the object constructor. Then, you will be able
-/// to call the `fit()` method. Once the `fit()` method is called, the object will store the
-/// silhouette values for each number of clusters. This method returns the optimal number of
-/// clusters, which is the number of clusters that maximizes the silhouette value.
-///
-/// You can also call the `plot()` method to plot the silhouette values for each number of
-/// clusters. This method will return a matplotlib figure object.
-///
-/// __GapStatistic__ object:
-///
-/// This object wraps a KMeans estimator instance from SciKit-Learn and enables you to
-/// quickly find the optimal number of clusters for your dataset. You need to pass the
-/// estimator instance and the X matrix to the object constructor. Then, you will be able
-/// to call the `fit()` method. Once the `fit()` method is called, the object will store the
-/// gap statistic values for each number of clusters. This method returns the optimal number of
-/// clusters, which is the number of clusters that maximizes the gap statistic value.
-///
-/// You can also call the `plot()` method to plot the gap statistic values for each number of
-/// clusters. This method will return a matplotlib figure object.
+#[pyclass]
+struct Elbow {
+    estimator: PyObject,
+    X: Vec<Vec<f64>>,
 
+    elbow: u8
+}
+
+#[pymethods]
+impl Elbow {
+    fn new(estimator: PyObject, X: Vec<Vec<f64>>) -> Self {
+        Elbow { estimator, X, elbow: 0 }
+    }
+
+    fn _run_kmeans(&self, n_clusters: usize) -> PyResult<f64> {
+        let estimator = self.estimator.call_method1("_run_kmeans", (n_clusters,))?;
+        let inertia = estimator.getattr("inertia_")?.extract::<f64>()?;
+        Ok(inertia)
+    }
+
+    fn _fit(&self, min_k: usize, max_k: usize) -> PyResult<Vec<f64>> {
+        let mut inertias = Vec::new();
+        for k in min_k..=max_k {
+            let inertia = self._run_kmeans(k)?;
+            inertias.push(inertia);
+        }
+        Ok(inertias)
+    }
+
+    fn _compute_elbow(&self, min_k: usize, max_k: usize) -> PyResult<u8> {
+        let inertias = self._fit(min_k, max_k)?;
+        let mut elbow = 0;
+        let mut min_diff = 0.0;
+        for (i, inertia) in inertias.iter().enumerate() {
+            if i == 0 {
+                continue;
+            }
+            let diff = inertias[i - 1] - inertia;
+            if diff > min_diff {
+                elbow = i as u8;
+                min_diff = diff;
+            }
+        }
+        Ok(elbow)
+    }
+
+    fn fit(&mut self, min_k: usize, max_k: usize) -> PyResult<()> {
+        self.elbow = self._compute_elbow(min_k, max_k)?;
+        Ok(())
+    }
+}
 
 #[pymodule]
 fn pycruster(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(closest_to_origin, m)?)?;
+    m.add_class::<Elbow>()?;
     Ok(())
 }
